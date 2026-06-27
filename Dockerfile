@@ -3,11 +3,10 @@ FROM php:8.2-apache
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
-# Install PostgreSQL driver
-RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo_pgsql pdo_mysql
+# Install MySQL driver
+RUN docker-php-ext-install pdo_mysql
 
-# Copy backend folder to /var/www/html/
+# Copy backend files
 COPY backend/ /var/www/html/
 
 # Set permissions
