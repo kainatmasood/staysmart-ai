@@ -1715,9 +1715,10 @@ function displayAIResults(properties, reasons) {
 
     // Chatbot
 // ============ CONNECT TO PYTHON AI SERVER ============
+// ============ CONNECT TO PYTHON AI SERVER ============
 async function sendChatMessage() {
-    const AI_API = 'https://staysmart-ai-service.onrender.com'; 
-// ============ DISPLAY AI RESULTS WITH SCORES ============
+    const AI_API = 'https://staysmart-ai-service.onrender.com';
+    
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     if (!message) return;
@@ -1734,7 +1735,7 @@ async function sendChatMessage() {
     
     try {
         // === CALL PYTHON AI SERVER ===
-        const response = await fetch('http://localhost:5000/chatbot', {
+        const response = await fetch(`${AI_API}/chatbot`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -1787,7 +1788,7 @@ async function sendChatMessage() {
     
     container.scrollTop = container.scrollHeight;
 }
-
+    
 function getAIResponse(message) {
     const msg = message.toLowerCase().trim();
     
