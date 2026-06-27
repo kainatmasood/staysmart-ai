@@ -12,50 +12,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/chatbot', methods=['POST'])
-def chatbot():
-    try:
-        data = request.json
-        query = data.get('query', '')
-        properties = data.get('properties', [])
-        
-        # Simple response
-        reply = f"I received your message: '{query}'. I'll help you find properties!"
-        
-        return jsonify({
-            'reply': reply,
-            'properties': properties[:3] if properties else [],
-            'source': 'ai-service'
-        })
-    except Exception as e:
-        return jsonify({
-            'reply': f'Error: {str(e)}',
-            'properties': []
-        })
-
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({
-        'status': 'ok',
-        'message': 'StaySmart AI Service is running!',
-        'endpoints': {
-            'chatbot': '/chatbot (POST)',
-            'health': '/ (GET)'
-        }
-    })
-
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok', 'service': 'StaySmart AI'})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
 
 app = Flask(__name__)
 CORS(app)
@@ -118,11 +74,9 @@ PRICE_MODEL = build_price_model()
 def extract_info(message):
     msg = message.lower()
     
-    # Extract budget
     budget_match = re.search(r'(\d{3,6})', msg)
     budget = int(budget_match.group(1)) if budget_match else None
     
-    # Extract city
     cities = ['islamabad', 'lahore', 'karachi', 'rawalpindi', 'peshawar', 'multan']
     city = None
     for c in cities:
@@ -130,7 +84,6 @@ def extract_info(message):
             city = c.title()
             break
     
-    # Extract lifestyle
     lifestyle_keywords = {
         'quiet': ['quiet', 'peaceful', 'calm', 'study', 'silent'],
         'social': ['social', 'party', 'friends', 'loud'],
@@ -144,7 +97,6 @@ def extract_info(message):
             lifestyle = key.title()
             break
     
-    # Extract property type
     property_types = ['apartment', 'house', 'studio', 'penthouse', 'room']
     property_type = None
     for p in property_types:
@@ -160,19 +112,16 @@ def extract_info(message):
         'has_info': budget or city or lifestyle or property_type
     }
 
-# Helper: Check if message is a greeting
 def is_greeting(message):
     greetings = ['hi', 'hello', 'hey', 'good morning', 'good evening', 'salam', 'assalam', 'howdy', 'yo']
     msg = message.lower().strip()
     return msg in greetings or msg.startswith(('hi', 'hello', 'hey'))
 
-# Helper: Check if message is asking for help
 def is_help(message):
     help_words = ['help', 'what can you do', 'how to use', 'guide', 'tutorial', 'explain']
     msg = message.lower()
     return any(w in msg for w in help_words)
 
-# Helper: Check if user is saying thank you
 def is_thanks(message):
     thanks = ['thank', 'thanks', 'ty', 'thank you', 'appreciate', 'grateful']
     msg = message.lower()
@@ -186,7 +135,6 @@ def chatbot():
     properties = data.get("properties", [])
     user_id = data.get("user_id", "default")
     
-    # Get or create conversation state
     if user_id not in conversation_memory:
         conversation_memory[user_id] = {
             'asked_budget': False,
@@ -197,7 +145,6 @@ def chatbot():
     
     state = conversation_memory[user_id]
     
-    # --- CHECK FOR GREETING ---
     if is_greeting(query):
         return jsonify({
             "reply": "👋 Hello! Welcome to StaySmart AI!\n\nI can help you find the perfect property. Please tell me:\n\n1️⃣ What is your monthly budget? (e.g., 50000)\n2️⃣ Which city do you prefer? (Islamabad/Lahore/Karachi)\n3️⃣ What lifestyle are you looking for? (quiet/social/family)\n\nExample: 'I want a quiet apartment in Islamabad under 50000'",
@@ -205,7 +152,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # --- CHECK FOR HELP ---
     if is_help(query):
         return jsonify({
             "reply": "📖 Here's how I can help you:\n\n1. 🏠 Find properties - Tell me your budget, city, and lifestyle\n2. 💰 Budget advice - Ask about rental prices in different cities\n3. 🤝 Roommate matching - Find compatible roommates\n4. 📊 Expense calculator - Estimate monthly costs\n\nExample: 'Find a quiet apartment in Islamabad under 50000'",
@@ -213,7 +159,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # --- CHECK FOR THANKS ---
     if is_thanks(query):
         return jsonify({
             "reply": "🙌 You're welcome! I'm always here to help.\n\nIs there anything else you'd like to know? You can ask about properties, budgets, or roommate matching!",
@@ -221,14 +166,9 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # --- EXTRACT INFORMATION ---
     info = extract_info(query)
     
-    # --- CONVERSATIONAL FLOW ---
-    
-    # Case 1: User provided ALL information
     if info['budget'] and info['city'] and info['lifestyle']:
-        # Search with all filters
         filtered = []
         for p in properties:
             match = True
@@ -243,7 +183,6 @@ def chatbot():
             if match:
                 filtered.append(p)
         
-        # Reset state
         conversation_memory[user_id] = {
             'asked_budget': False,
             'asked_city': False,
@@ -277,14 +216,10 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # Case 2: User provided budget + city, missing lifestyle
     elif info['budget'] and info['city'] and not info['lifestyle']:
-        # Filter by budget + city
         filtered = [p for p in properties if p.get('city', '').lower() == info['city'].lower() and float(p.get('rent', 0)) <= info['budget']]
         
         reply = f"🏠 I found {len(filtered)} properties in {info['city']} under Rs. {info['budget']:,}.\n\n"
-        
-        # Ask clarifying question
         reply += "🤔 What lifestyle are you looking for?\n\n"
         reply += "Choose from:\n"
         reply += "• 🧘 Quiet / Study focused\n"
@@ -293,13 +228,11 @@ def chatbot():
         reply += "• 💼 Professional / Work\n\n"
         reply += "Example: 'I prefer a quiet environment'"
         
-        # Show some options
         if filtered:
             reply += "\n\n📊 Here are some options I found:\n"
             for p in filtered[:3]:
                 reply += f"• {p.get('property_name')} - Rs. {p.get('rent', 0):,}/month\n"
         
-        # Store state
         conversation_memory[user_id] = {
             'asked_budget': True,
             'asked_city': True,
@@ -313,7 +246,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # Case 3: User provided budget only
     elif info['budget'] and not info['city']:
         filtered = [p for p in properties if float(p.get('rent', 0)) <= info['budget']]
         
@@ -339,7 +271,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # Case 4: User provided city only
     elif info['city'] and not info['budget']:
         filtered = [p for p in properties if p.get('city', '').lower() == info['city'].lower()]
         
@@ -365,7 +296,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # Case 5: User provided lifestyle only
     elif info['lifestyle'] and not info['budget'] and not info['city']:
         filtered = [p for p in properties if p.get('lifestyle_tag', '').lower() == info['lifestyle'].lower()]
         
@@ -392,7 +322,6 @@ def chatbot():
             "source": "conversational-ai"
         })
     
-    # Case 6: No information provided
     else:
         reply = "🤖 I'm here to help you find the perfect property!\n\n"
         reply += "Please tell me:\n"
@@ -408,17 +337,14 @@ def chatbot():
             "source": "conversational-ai"
         })
 
-# Helper: Calculate match score
 def calculate_match_score(property, info):
     score = 70
-    
     if info['budget'] and float(property.get('rent', 0)) <= info['budget']:
         score += 15
     if info['city'] and property.get('city', '').lower() == info['city'].lower():
         score += 10
     if info['lifestyle'] and property.get('lifestyle_tag', '').lower() == info['lifestyle'].lower():
         score += 5
-    
     return min(99, score)
 
 # ===== OTHER ENDPOINTS =====
@@ -494,4 +420,4 @@ def health():
     return jsonify({"status": "ok", "service": "StaySmart AI - Conversational AI Microservice"})
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=10000)
