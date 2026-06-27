@@ -1416,8 +1416,6 @@ function getAIRecommendations() {
     }, 1500);
 }
 // NEW (Production)
-const AI_API = 'https://staysmart-ai-service.onrender.com'; 
-// ============ DISPLAY AI RESULTS WITH SCORES ============
 function displayAIResultsWithScores(properties) {
     const grid = document.getElementById('propertiesGrid');
     
@@ -1718,6 +1716,8 @@ function displayAIResults(properties, reasons) {
     // Chatbot
 // ============ CONNECT TO PYTHON AI SERVER ============
 async function sendChatMessage() {
+    const AI_API = 'https://staysmart-ai-service.onrender.com'; 
+// ============ DISPLAY AI RESULTS WITH SCORES ============
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     if (!message) return;
