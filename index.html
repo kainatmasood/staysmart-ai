@@ -1715,10 +1715,7 @@ function displayAIResults(properties, reasons) {
 
     // Chatbot
 // ============ CONNECT TO PYTHON AI SERVER ============
-// ============ CONNECT TO PYTHON AI SERVER ============
 async function sendChatMessage() {
-    const AI_API = 'https://staysmart-ai-service.onrender.com';
-    
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     if (!message) return;
@@ -1730,12 +1727,12 @@ async function sendChatMessage() {
     input.value = '';
     
     // Show typing indicator
-    container.innerHTML += `<div class="d-flex mb-3" id="typing"><div class="bg-white p-3 rounded-3"><span class="spinner-border spinner-border-sm"></span> AI is analyzing...</div></div>`;
+    container.innerHTML += `<div class="d-flex mb-3" id="typing"><div class="bg-white p-3 rounded-3"><span class="spinner-border spinner-border-sm"></span> AI is thinking...</div></div>`;
     container.scrollTop = container.scrollHeight;
     
     try {
-        // === CALL PYTHON AI SERVER ===
-        const response = await fetch(`${AI_API}/chatbot`, {
+        // === CALL YOUR RENDER AI SERVICE ===
+        const response = await fetch('https://staysmart-ai-service.onrender.com/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -1748,7 +1745,6 @@ async function sendChatMessage() {
                     rooms: p.beds,
                     property_type: p.type,
                     lifestyle_tag: p.lifestyle,
-                    facilities: p.amenities || '',
                     images: p.image
                 }))
             })
@@ -1758,32 +1754,15 @@ async function sendChatMessage() {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('AI Server Response:', data);
-            
-            let reply = data.reply || "I received your message!";
-            
-            // Show properties if found
-            if (data.properties && data.properties.length > 0) {
-                reply += '<br><br>🏠 <strong>Top Matches:</strong><br>';
-                data.properties.slice(0, 3).forEach((p, i) => {
-                    reply += `${i+1}. <strong>${p.property_name}</strong> - Rs. ${p.rent.toLocaleString()}/month in ${p.city}<br>`;
-                });
-                reply += '<br>💡 Click on any property to view details!';
-            }
-            
-            container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ${reply}</div></div>`;
+            console.log('AI Response:', data);
+            container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ${data.reply || 'No reply'}</div></div>`;
         } else {
-            // Server error
-            container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ⚠️ Server error. Using local AI...</div></div>`;
-            const fallback = getLocalAIResponse(message);
-            container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ${fallback}</div></div>`;
+            container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ⚠️ Server error. Please try again.</div></div>`;
         }
     } catch (error) {
-        // === FALLBACK: Python server not running ===
         document.getElementById('typing')?.remove();
-        console.log('Python server not running, using fallback');
-        const fallback = getLocalAIResponse(message);
-        container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ${fallback}</div></div>`;
+        console.error('Error:', error);
+        container.innerHTML += `<div class="d-flex mb-3"><div class="bg-white p-3 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-robot text-primary"></i> ⚠️ Connection error. Make sure the AI service is running.</div></div>`;
     }
     
     container.scrollTop = container.scrollHeight;
