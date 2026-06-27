@@ -1,20 +1,18 @@
 <?php
 class Database {
-    // === RENDER POSTGRESQL CREDENTIALS ===
-    private $host = "dpg-xxxxx.onrender.com";  // Your Render PostgreSQL host
-    private $db_name = "staysmart_db";
-    private $username = "staysmart_user";
-    private $password = "your_password";
-    private $port = "5432";
+    // === USE YOUR DATABASE CREDENTIALS ===
+    private $host = "sql212.infinityfree.com";
+    private $db_name = "if0_42284197_staysmart_db";
+    private $username = "if0_42284197";
+    private $password = "oyatNAOUEYMSr";
     
     public $conn;
 
     public function getConnection() {
         $this->conn = null;
         try {
-            // PostgreSQL connection
-            $dsn = "pgsql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name;
-            $this->conn = new PDO($dsn, $this->username, $this->password);
+            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, 
+                                  $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->exec("set names utf8");
         } catch(PDOException $exception) {
