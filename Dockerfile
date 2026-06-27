@@ -7,8 +7,8 @@ RUN a2enmod rewrite
 RUN apt-get update && apt-get install -y libpq-dev \
     && docker-php-ext-install pdo_pgsql pdo_mysql
 
-# Copy ALL backend files (NOT just api)
-COPY . /var/www/html/
+# Copy backend folder to /var/www/html/
+COPY backend/ /var/www/html/
 
 # Set permissions
 RUN chmod -R 755 /var/www/html
