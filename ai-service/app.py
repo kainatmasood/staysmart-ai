@@ -12,6 +12,50 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    try:
+        data = request.json
+        query = data.get('query', '')
+        properties = data.get('properties', [])
+        
+        # Simple response
+        reply = f"I received your message: '{query}'. I'll help you find properties!"
+        
+        return jsonify({
+            'reply': reply,
+            'properties': properties[:3] if properties else [],
+            'source': 'ai-service'
+        })
+    except Exception as e:
+        return jsonify({
+            'reply': f'Error: {str(e)}',
+            'properties': []
+        })
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        'status': 'ok',
+        'message': 'StaySmart AI Service is running!',
+        'endpoints': {
+            'chatbot': '/chatbot (POST)',
+            'health': '/ (GET)'
+        }
+    })
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok', 'service': 'StaySmart AI'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
 
 app = Flask(__name__)
 CORS(app)
