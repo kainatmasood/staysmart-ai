@@ -6,7 +6,7 @@ RUN a2enmod rewrite
 # Install MySQL driver
 RUN docker-php-ext-install pdo_mysql
 
-# Copy backend files
+# Copy the CONTENTS of backend folder (NOT the folder itself)
 COPY backend/ /var/www/html/
 
 # Set permissions
