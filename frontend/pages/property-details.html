@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Details - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4" id="content">
+    <div class="text-center text-muted py-5">Loading property...</div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const propertyId = new URLSearchParams(window.location.search).get("id");
+    const content = document.getElementById("content");
+
+    const durationOptions = [
+      { value: 1, label: "Monthly (1 month)" },
+      { value: 3, label: "Quarterly (3 months)" },
+      { value: 6, label: "Semester (6 months)" },
+      { value: 12, label: "Annual (12 months)" },
+    ];
+
+    function starString(rating) {
+      const full = "★".repeat(rating);
+      const empty = "☆".repeat(5 - rating);
+      return `<span class="stars">${full}${empty}</span>`;
+    }
+
+    async function loadProperty() {
+      if (!propertyId) {
+        content.innerHTML = `<div class="alert alert-warning">No property selected.</div>`;
+        return;
+      }
+      try {
+        const p = await api(`/api/properties.php?id=${propertyId}`);
+        const facilities = (p.facilities || "").split(",").filter(Boolean);
+        const user = await getCurrentUser();
+
+        content.innerHTML = `
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <img src="https://placehold.co/700x400?text=${encodeURIComponent(p.property_name)}" class="img-fluid rounded-4 mb-3" alt="${p.property_name}">
+              <h2>${p.property_name}</h2>
+              <p class="text-muted mb-1">${p.address}, ${p.city}</p>
+              <p class="price fs-4">Rs. ${Number(p.rent).toLocaleString()} / month</p>
+              <div class="d-flex gap-3 mb-3">
+                <span class="badge bg-secondary">${p.property_type}</span>
+                <span class="badge bg-secondary">${p.rooms} room(s)</span>
+                ${p.lifestyle_tag ? `<span class="badge bg-info text-dark">${p.lifestyle_tag}</span>` : ""}
+              </div>
+              <h5>Facilities</h5>
+              <p>${facilities.length ? facilities.map(f => `<span class="badge bg-light text-dark border me-1">${f}</span>`).join("") : "Not specified"}</p>
+              <h5>Description</h5>
+              <p>${p.description || "No description provided."}</p>
+              <p class="text-muted small">Listed by ${p.owner_name} (${p.owner_phone || "contact via platform"})</p>
+
+              <hr>
+              <h5>Reviews (${p.reviews.length})</h5>
+              <div id="reviews-list">
+                ${p.reviews.length ? p.reviews.map(r => `
+                  <div class="mb-2 border-bottom pb-2">
+                    <strong>${r.user_name}</strong> ${starString(r.rating)}
+                    <p class="mb-0">${r.comments || ""}</p>
+                  </div>
+                `).join("") : `<p class="text-muted">No reviews yet.</p>`}
+              </div>
+
+              <div id="review-form-container" class="mt-3"></div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="card p-4">
+                <h5 class="mb-3">Book This Property</h5>
+                <div id="booking-alert"></div>
+                <form id="booking-form">
+                  <div class="mb-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-control" name="start_date" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Duration</label>
+                    <select class="form-select" name="duration_months" required>
+                      ${durationOptions.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}
+                    </select>
+                  </div>
+                  <p>Estimated Total: <strong id="total-estimate">Rs. ${Number(p.rent).toLocaleString()}</strong></p>
+                  <button type="submit" class="btn btn-primary w-100">Request Booking</button>
+                </form>
+              </div>
+
+              <div class="card p-4 mt-3">
+                <h6>Plan Your Budget</h6>
+                <p class="text-muted small">Use the <a href="expense-calculator.html?rent=${p.rent}">Living Expense Calculator</a> to estimate your total monthly costs including utilities.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Update estimate on duration change
+        const form = document.getElementById("booking-form");
+        const estimate = document.getElementById("total-estimate");
+        form.duration_months.addEventListener("change", (e) => {
+          estimate.textContent = `Rs. ${(p.rent * Number(e.target.value)).toLocaleString()}`;
+        });
+
+        // Booking submission
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const fd = new FormData(form);
+          try {
+            if (!user) {
+              showAlert("booking-alert", `Please <a href="login.html">login</a> to book this property.`, "warning");
+              return;
+            }
+            const data = await api("/api/bookings.php", {
+              method: "POST",
+              body: {
+                property_id: Number(propertyId),
+                start_date: fd.get("start_date"),
+                duration_months: Number(fd.get("duration_months")),
+              }
+            });
+            showAlert("booking-alert", `Booking requested! Total: Rs. ${Number(data.total_amount).toLocaleString()} (until ${data.end_date}). Status: pending owner confirmation.`, "success");
+          } catch (err) {
+            showAlert("booking-alert", err.message);
+          }
+        });
+
+        // Review form (only show if logged in)
+        const reviewContainer = document.getElementById("review-form-container");
+        if (user) {
+          reviewContainer.innerHTML = `
+            <h6 class="mt-3">Leave a Review</h6>
+            <div id="review-alert"></div>
+            <form id="review-form" class="row g-2">
+              <div class="col-md-4">
+                <select class="form-select" name="rating" required>
+                  <option value="">Rating</option>
+                  <option value="5">5 - Excellent</option>
+                  <option value="4">4 - Good</option>
+                  <option value="3">3 - Average</option>
+                  <option value="2">2 - Poor</option>
+                  <option value="1">1 - Terrible</option>
+                </select>
+              </div>
+              <div class="col-md-8">
+                <input type="text" class="form-control" name="comments" placeholder="Your comments">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-outline-primary btn-sm" type="submit">Submit Review</button>
+                <small class="text-muted ms-2">(only available if you have a confirmed/completed booking)</small>
+              </div>
+            </form>
+          `;
+          document.getElementById("review-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            try {
+              await api("/api/reviews.php", {
+                method: "POST",
+                body: { property_id: Number(propertyId), rating: Number(fd.get("rating")), comments: fd.get("comments") }
+              });
+              showAlert("review-alert", "Review submitted! Refresh to see it.", "success");
+            } catch (err) {
+              showAlert("review-alert", err.message);
+            }
+          });
+        }
+
+      } catch (e) {
+        content.innerHTML = `<div class="alert alert-danger">Could not load property. ${e.message}</div>`;
+      }
+    }
+
+    loadProperty();
+  </script>
+</body>
+</html>

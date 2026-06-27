@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Dashboard - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">Property Owner Dashboard</h2>
+    <div id="auth-check"></div>
+
+    <div id="owner-content" style="display:none;">
+      <!-- AI Price Prediction -->
+      <div class="card p-4 mb-4">
+        <h5 class="mb-3">AI Rental Price Prediction</h5>
+        <p class="text-muted">Enter property details to get an AI-suggested monthly rent.</p>
+        <form id="predict-form" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" name="city" placeholder="Islamabad" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Rooms</label>
+            <input type="number" class="form-control" name="rooms" min="1" value="2" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Property Type</label>
+            <select class="form-select" name="property_type">
+              <option value="apartment">Apartment</option>
+              <option value="house">House</option>
+              <option value="studio">Studio</option>
+              <option value="room">Room</option>
+              <option value="hostel">Hostel</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Predict Price</button>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Facilities</label>
+            <div class="d-flex flex-wrap gap-3">
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="wifi"> WiFi</label>
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="parking"> Parking</label>
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="furnished"> Furnished</label>
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="ac"> AC</label>
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="backup"> Power Backup</label>
+              <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="water"> Water Supply</label>
+            </div>
+          </div>
+        </form>
+        <div id="predict-result" class="mt-3"></div>
+      </div>
+
+      <!-- Add Property -->
+      <div class="card p-4 mb-4">
+        <h5 class="mb-3">Add New Property</h5>
+        <div id="add-alert"></div>
+        <form id="add-property-form" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Property Name</label>
+            <input type="text" class="form-control" name="property_name" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-control" name="address" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" name="city" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Property Type</label>
+            <select class="form-select" name="property_type">
+              <option value="apartment">Apartment</option>
+              <option value="house">House</option>
+              <option value="studio">Studio</option>
+              <option value="room">Room</option>
+              <option value="hostel">Hostel</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Rooms</label>
+            <input type="number" class="form-control" name="rooms" min="1" value="1" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Monthly Rent (Rs.)</label>
+            <input type="number" class="form-control" name="rent" min="0" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Facilities (comma separated)</label>
+            <input type="text" class="form-control" name="facilities" placeholder="wifi,parking,furnished,ac">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Lifestyle Tag</label>
+            <select class="form-select" name="lifestyle_tag">
+              <option value="">None</option>
+              <option value="quiet">Quiet</option>
+              <option value="social">Social</option>
+              <option value="family">Family</option>
+              <option value="students">Students</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="2"></textarea>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit Property (pending admin approval)</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- My Properties -->
+      <h5 class="mt-4">My Properties</h5>
+      <div id="properties-list" class="row g-3 mt-2">
+        <div class="col-12 text-center text-muted py-4">Loading properties...</div>
+      </div>
+
+      <!-- Bookings for my properties -->
+      <h5 class="mt-4">Bookings on My Properties</h5>
+      <div id="bookings-list" class="row g-3 mt-2">
+        <div class="col-12 text-center text-muted py-4">Loading bookings...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const statusColors = {
+      active: "bg-success", pending: "bg-warning text-dark", inactive: "bg-secondary",
+      confirmed: "bg-success", cancelled: "bg-danger", completed: "bg-secondary",
+    };
+
+    let currentUser = null;
+
+    async function init() {
+      currentUser = await getCurrentUser();
+      if (!currentUser) {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-warning">Please <a href="login.html">login</a> to access the owner dashboard.</div>`;
+        return;
+      }
+      if (currentUser.role !== "owner" && currentUser.role !== "admin") {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-info">This dashboard is for property owners. Go to your <a href="tenant-dashboard.html">tenant dashboard</a>.</div>`;
+        return;
+      }
+
+      document.getElementById("owner-content").style.display = "block";
+      await loadProperties();
+      await loadBookings();
+    }
+
+    // ---- AI Price Prediction ----
+    document.getElementById("predict-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {
+        city: fd.get("city"),
+        rooms: Number(fd.get("rooms")),
+        property_type: fd.get("property_type"),
+        facilities: fd.getAll("facilities"),
+      };
+      const result = document.getElementById("predict-result");
+      try {
+        const data = await api("/api/price-predict.php", { method: "POST", body: payload });
+        result.innerHTML = `<div class="alert alert-info mb-0">Suggested Rent: <strong>Rs. ${Number(data.predicted_price).toLocaleString()}</strong> / month
+          ${data.source === 'fallback-heuristic' ? '<br><small class="text-muted">(AI service offline - heuristic estimate used)</small>' : ''}</div>`;
+      } catch (err) {
+        result.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+
+    // ---- Add Property ----
+    document.getElementById("add-property-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {};
+      for (const [k, v] of fd.entries()) payload[k] = v;
+      payload.rooms = Number(payload.rooms);
+      payload.rent = Number(payload.rent);
+
+      try {
+        await api("/api/properties.php", { method: "POST", body: payload });
+        showAlert("add-alert", "Property submitted successfully and is pending admin approval.", "success");
+        e.target.reset();
+        loadProperties();
+      } catch (err) {
+        showAlert("add-alert", err.message);
+      }
+    });
+
+    // ---- My Properties ----
+    async function loadProperties() {
+      const container = document.getElementById("properties-list");
+      try {
+        const properties = await api(`/api/properties.php?owner_id=${currentUser.user_id}`);
+        if (!properties.length) {
+          container.innerHTML = `<div class="col-12 text-center text-muted py-4">You haven't listed any properties yet.</div>`;
+          return;
+        }
+        container.innerHTML = properties.map(p => `
+          <div class="col-md-4">
+            <div class="card p-3 h-100">
+              <div class="d-flex justify-content-between">
+                <h6 class="mb-1">${p.property_name}</h6>
+                <span class="badge ${statusColors[p.status] || 'bg-secondary'}">${p.status}</span>
+              </div>
+              <p class="text-muted small mb-1">${p.city} • ${p.rooms} room(s) • ${p.property_type}</p>
+              <p class="price mb-2">Rs. ${Number(p.rent).toLocaleString()} / month</p>
+              <a href="property-details.html?id=${p.property_id}" class="btn btn-sm btn-outline-primary">View</a>
+            </div>
+          </div>
+        `).join("");
+      } catch (e) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-4">${e.message}</div>`;
+      }
+    }
+
+    // ---- Bookings on my properties ----
+    async function loadBookings() {
+      const container = document.getElementById("bookings-list");
+      try {
+        const bookings = await api(`/api/bookings.php?owner_id=${currentUser.user_id}`);
+        if (!bookings.length) {
+          container.innerHTML = `<div class="col-12 text-center text-muted py-4">No bookings yet.</div>`;
+          return;
+        }
+        container.innerHTML = bookings.map(b => `
+          <div class="col-md-6">
+            <div class="card p-3 h-100">
+              <div class="d-flex justify-content-between">
+                <h6 class="mb-1">${b.property_name}</h6>
+                <span class="badge ${statusColors[b.status] || 'bg-secondary'}">${b.status}</span>
+              </div>
+              <p class="text-muted small mb-1">Tenant: ${b.tenant_name} (${b.tenant_phone || "N/A"})</p>
+              <p class="mb-1">Start: ${b.start_date} • Duration: ${b.duration_months} month(s)</p>
+              <p class="mb-2">Total: Rs. ${Number(b.total_amount).toLocaleString()}</p>
+              ${b.status === 'pending' ? `
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-success confirm-btn" data-id="${b.booking_id}">Confirm</button>
+                  <button class="btn btn-sm btn-outline-danger cancel-btn" data-id="${b.booking_id}">Reject</button>
+                </div>` : ""}
+            </div>
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".confirm-btn").forEach(btn => {
+          btn.addEventListener("click", () => updateBooking(btn.dataset.id, "confirmed"));
+        });
+        document.querySelectorAll(".cancel-btn").forEach(btn => {
+          btn.addEventListener("click", () => updateBooking(btn.dataset.id, "cancelled"));
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-4">${e.message}</div>`;
+      }
+    }
+
+    async function updateBooking(id, status) {
+      try {
+        await api(`/api/bookings.php?id=${id}`, { method: "PUT", body: { status } });
+        loadBookings();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

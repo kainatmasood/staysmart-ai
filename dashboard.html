@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; padding-top: 70px; }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 70px); }
+        
+        /* Sidebar */
+        .sidebar { width: 280px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); padding: 30px 0; position: fixed; height: calc(100vh - 70px); overflow-y: auto; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 5px; }
+        .sidebar-menu a { display: flex; align-items: center; padding: 12px 25px; color: #4b5563; text-decoration: none; transition: 0.3s; border-left: 3px solid transparent; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: #f3f4f6; color: #667eea; border-left-color: #667eea; }
+        .sidebar-menu a i { width: 25px; margin-right: 10px; }
+        
+        /* Main Content */
+        .main-content { margin-left: 280px; padding: 30px; width: 100%; }
+        
+        /* Stats Cards */
+        .stat-card { background: white; border-radius: 20px; padding: 25px; transition: 0.3s; animation: slideUp 0.5s ease-out; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-icon { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .stat-icon i { font-size: 1.5rem; color: white; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #1f2937; }
+        
+        /* Booking Cards */
+        .booking-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; transition: 0.3s; animation: slideUp 0.5s ease-out; cursor: pointer; }
+        .booking-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-confirmed { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fed7aa; color: #92400e; }
+        .status-completed { background: #e0e7ff; color: #3730a3; }
+        
+        /* Welcome Animation */
+        .welcome-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; padding: 30px; color: white; margin-bottom: 30px; animation: pulse 2s ease-in-out infinite; }
+        
+        /* Chart Container */
+        .chart-container { background: white; border-radius: 20px; padding: 20px; margin-top: 20px; }
+        
+        @keyframes chartFill {
+            from { width: 0; }
+            to { width: var(--width); }
+        }
+        
+        .expense-bar { height: 30px; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 15px; margin: 10px 0; animation: chartFill 1s ease-out; }
+        
+        /* Responsive */
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fas fa-robot"></i> StaySmart AI</a>
+        <div class="d-flex align-items-center">
+            <img src="https://ui-avatars.com/api/?background=667eea&color=fff&name=User" style="width: 40px; height: 40px; border-radius: 50%;">
+            <span class="ms-2 fw-bold" id="userName">User</span>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <img src="https://ui-avatars.com/api/?background=667eea&color=fff&size=80&name=User" style="width: 80px; height: 80px; border-radius: 50%;">
+            <h5 class="mt-2" id="sidebarUserName">User Name</h5>
+            <p class="text-muted small" id="userEmail">user@example.com</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-tab="overview"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+            <li><a href="#" data-tab="bookings"><i class="fas fa-calendar-check"></i> My Bookings</a></li>
+            <li><a href="#" data-tab="wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+            <li><a href="#" data-tab="roommates"><i class="fas fa-users"></i> Roommate Matches</a></li>
+            <li><a href="#" data-tab="expenses"><i class="fas fa-chart-line"></i> Expense Tracker</a></li>
+            <li><a href="#" data-tab="settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Overview Tab -->
+        <div id="overviewTab">
+            <div class="welcome-card" data-aos="fade-up">
+                <h2>Welcome back, <span id="welcomeUserName">User</span>! 👋</h2>
+                <p>Here's what's happening with your accommodation journey today.</p>
+            </div>
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stat-number" id="totalBookings">3</div>
+                        <div>Total Bookings</div>
+                        <small class="text-success"><i class="fas fa-arrow-up"></i> +20% from last month</small>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-number" id="roommateMatches">5</div>
+                        <div>Roommate Matches</div>
+                        <small class="text-success"><i class="fas fa-arrow-up"></i> +3 new</small>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                        <div class="stat-number" id="wishlistCount">7</div>
+                        <div>Saved Properties</div>
+                        <small class="text-primary">View wishlist →</small>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-number" id="totalSpent">145,000</div>
+                        <div>Total Spent (PKR)</div>
+                        <small class="text-info">Lifetime value</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Bookings -->
+            <div class="chart-container" data-aos="fade-up">
+                <h4><i class="fas fa-clock"></i> Recent Bookings</h4>
+                <div id="recentBookings"></div>
+            </div>
+            
+            <!-- AI Recommendations -->
+            <div class="chart-container mt-4" data-aos="fade-up">
+                <h4><i class="fas fa-robot"></i> AI Recommended for You</h4>
+                <div id="recommendations" class="row g-3 mt-2"></div>
+            </div>
+        </div>
+        
+        <!-- Bookings Tab -->
+        <div id="bookingsTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-calendar-check"></i> My Bookings</h3>
+            <div id="allBookings"></div>
+        </div>
+        
+        <!-- Wishlist Tab -->
+        <div id="wishlistTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-heart"></i> Saved Properties</h3>
+            <div id="wishlistGrid" class="row g-4"></div>
+        </div>
+        
+        <!-- Roommates Tab -->
+        <div id="roommatesTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-users"></i> Roommate Matches</h3>
+            <div id="roommateMatchesList"></div>
+        </div>
+        
+        <!-- Expenses Tab -->
+        <div id="expensesTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-chart-line"></i> Monthly Expense Tracker</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5>Calculate Your Monthly Costs</h5>
+                        <div class="mb-3">
+                            <label>Monthly Rent (PKR)</label>
+                            <input type="number" class="form-control" id="calcRent" placeholder="Enter rent amount">
+                        </div>
+                        <div class="mb-3">
+                            <label>Utilities (Electricity + Water)</label>
+                            <input type="number" class="form-control" id="calcUtilities" value="5000">
+                        </div>
+                        <div class="mb-3">
+                            <label>Internet</label>
+                            <input type="number" class="form-control" id="calcInternet" value="2000">
+                        </div>
+                        <div class="mb-3">
+                            <label>Maintenance</label>
+                            <input type="number" class="form-control" id="calcMaintenance" value="3000">
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="calculateExpenses()">Calculate Total</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5>Expense Breakdown</h5>
+                        <div id="expenseBreakdown">
+                            <p class="text-muted">Enter your rent to see breakdown</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settingsTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-cog"></i> Profile Settings</h3>
+            <div class="chart-container">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" id="profileName">
+                            </div>
+                            <div class="mb-3">
+                                <label>Email Address</label>
+                                <input type="email" class="form-control" id="profileEmail">
+                            </div>
+                            <div class="mb-3">
+                                <label>Phone Number</label>
+                                <input type="tel" class="form-control" id="profilePhone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>Monthly Budget (PKR)</label>
+                                <input type="number" class="form-control" id="profileBudget">
+                            </div>
+                            <div class="mb-3">
+                                <label>Lifestyle Preference</label>
+                                <select class="form-control" id="profileLifestyle">
+                                    <option>Quiet / Study Focused</option>
+                                    <option>Social / Party</option>
+                                    <option>Balanced</option>
+                                    <option>Professional</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>Preferred Location</label>
+                                <input type="text" class="form-control" id="profileLocation">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
+    
+    let currentUser = null;
+    
+    // Sample data
+    const bookings = [
+        { id: 1, property: "Cozy Studio in F-10", location: "Islamabad", date: "2024-06-01", duration: "6 months", amount: 210000, status: "confirmed", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267" },
+        { id: 2, property: "Modern 2-Bed Apartment", location: "E-11, Islamabad", date: "2024-05-15", duration: "3 months", amount: 165000, status: "completed", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688" }
+    ];
+    
+    const wishlist = [
+        { id: 3, name: "Luxury Family House", location: "DHA, Lahore", price: 85000, image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6" },
+        { id: 4, name: "Budget Studio", location: "G-13, Islamabad", price: 25000, image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2" }
+    ];
+    
+    const roommateMatches = [
+        { name: "Ahmed Khan", age: 24, occupation: "Software Engineer", budget: 45000, lifestyle: "Quiet", match: 95, location: "Islamabad" },
+        { name: "Sara Ali", age: 22, occupation: "Medical Student", budget: 50000, lifestyle: "Balanced", match: 92, location: "Islamabad" },
+        { name: "Usman Riaz", age: 26, occupation: "Banker", budget: 40000, lifestyle: "Professional", match: 88, location: "Rawalpindi" }
+    ];
+    
+    const recommendations = [
+        { name: "Luxury Penthouse", location: "Blue Area", price: 120000, match: 96 },
+        { name: "Family House", location: "F-11", price: 95000, match: 89 },
+        { name: "Modern Studio", location: "I-8", price: 40000, match: 85 }
+    ];
+    
+    function loadDashboard() {
+        loadRecentBookings();
+        loadWishlist();
+        loadRoommateMatches();
+        loadRecommendations();
+        loadUserData();
+    }
+    
+    function loadRecentBookings() {
+        const container = document.getElementById('recentBookings');
+        container.innerHTML = bookings.map(booking => `
+            <div class="booking-card" onclick="viewBooking(${booking.id})">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h6 class="mb-1">${booking.property}</h6>
+                        <small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${booking.location}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <small>${booking.date}</small><br>
+                        <small>${booking.duration}</small>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <span class="status-badge status-${booking.status}">${booking.status.toUpperCase()}</span>
+                        <div class="fw-bold mt-1">Rs. ${booking.amount.toLocaleString()}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function loadWishlist() {
+        const container = document.getElementById('wishlistGrid');
+        container.innerHTML = wishlist.map(item => `
+            <div class="col-md-6">
+                <div class="booking-card" onclick="viewProperty(${item.id})">
+                    <div class="row align-items-center">
+                        <div class="col-4">
+                            <img src="${item.image}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 10px;">
+                        </div>
+                        <div class="col-8">
+                            <h6 class="mb-1">${item.name}</h6>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${item.location}</small>
+                            <div class="fw-bold text-primary mt-1">Rs. ${item.price.toLocaleString()}/month</div>
+                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="event.stopPropagation(); bookProperty(${item.id})">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function loadRoommateMatches() {
+        const container = document.getElementById('roommateMatchesList');
+        container.innerHTML = roommateMatches.map(match => `
+            <div class="booking-card">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <h6 class="mb-1"><i class="fas fa-user-circle"></i> ${match.name}</h6>
+                        <small>${match.age} yrs • ${match.occupation}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <small>Budget: Rs. ${match.budget.toLocaleString()}</small><br>
+                        <small>Lifestyle: ${match.lifestyle}</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="text-success fw-bold">${match.match}% Match</div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button class="btn btn-sm btn-primary" onclick="connectWithRoommate('${match.name}')">
+                            <i class="fas fa-comment"></i> Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function loadRecommendations() {
+        const container = document.getElementById('recommendations');
+        container.innerHTML = recommendations.map(rec => `
+            <div class="col-md-4">
+                <div class="booking-card" onclick="viewProperty(${rec.id})">
+                    <h6>${rec.name}</h6>
+                    <small><i class="fas fa-map-marker-alt"></i> ${rec.location}</small>
+                    <div class="fw-bold text-primary">Rs. ${rec.price.toLocaleString()}/month</div>
+                    <div class="text-success small"><i class="fas fa-robot"></i> ${rec.match}% AI Match</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function loadUserData() {
+        const stored = localStorage.getItem('staySmartUser');
+        if (stored) {
+            currentUser = JSON.parse(stored);
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('sidebarUserName').textContent = currentUser.name;
+            document.getElementById('welcomeUserName').textContent = currentUser.name;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('profileName').value = currentUser.name;
+            document.getElementById('profileEmail').value = currentUser.email;
+        }
+    }
+    
+    function calculateExpenses() {
+        const rent = parseFloat(document.getElementById('calcRent').value) || 0;
+        const utilities = parseFloat(document.getElementById('calcUtilities').value) || 0;
+        const internet = parseFloat(document.getElementById('calcInternet').value) || 0;
+        const maintenance = parseFloat(document.getElementById('calcMaintenance').value) || 0;
+        
+        const total = rent + utilities + internet + maintenance;
+        const electricity = utilities * 0.6;
+        const water = utilities * 0.4;
+        
+        document.getElementById('expenseBreakdown').innerHTML = `
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>Rent:</span>
+                    <strong>Rs. ${rent.toLocaleString()}</strong>
+                </div>
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar" style="width: ${(rent/total)*100}%; background: #667eea;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>Electricity:</span>
+                    <strong>Rs. ${electricity.toLocaleString()}</strong>
+                </div>
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar" style="width: ${(electricity/total)*100}%; background: #764ba2;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>Water:</span>
+                    <strong>Rs. ${water.toLocaleString()}</strong>
+                </div>
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar" style="width: ${(water/total)*100}%; background: #10b981;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>Internet:</span>
+                    <strong>Rs. ${internet.toLocaleString()}</strong>
+                </div>
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar" style="width: ${(internet/total)*100}%; background: #f59e0b;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>Maintenance:</span>
+                    <strong>Rs. ${maintenance.toLocaleString()}</strong>
+                </div>
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar" style="width: ${(maintenance/total)*100}%; background: #ef4444;"></div>
+                </div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Total Monthly:</strong>
+                <strong style="font-size: 1.3rem; color: #667eea;">Rs. ${total.toLocaleString()}</strong>
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-lightbulb"></i> Based on your budget, we recommend properties under Rs. ${Math.round(total * 0.3).toLocaleString()} for comfortable living.
+            </div>
+        `;
+    }
+    
+    function viewBooking(id) { showNotification(`Viewing booking #${id}`, 'info'); }
+    function viewProperty(id) { showNotification(`Viewing property details`, 'info'); }
+    function bookProperty(id) { showNotification(`Booking initiated for property #${id}`, 'success'); }
+    function connectWithRoommate(name) { showNotification(`Connection request sent to ${name}!`, 'success'); }
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'info'} position-fixed bottom-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.style.animation = 'slideUp 0.3s ease-out';
+        notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+    
+    // Tab switching
+    document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tab = link.getAttribute('data-tab');
+            
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            link.classList.add('active');
+            
+            document.querySelectorAll('[id$="Tab"]').forEach(tabDiv => tabDiv.style.display = 'none');
+            document.getElementById(`${tab}Tab`).style.display = 'block';
+        });
+    });
+    
+    document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showNotification('Profile updated successfully!', 'success');
+    });
+    
+    function logout() {
+        localStorage.removeItem('staySmartUser');
+        window.location.href = 'index.html';
+    }
+    
+    loadDashboard();
+</script>
+</body>
+</html>

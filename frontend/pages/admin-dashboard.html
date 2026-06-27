@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">Admin Dashboard</h2>
+    <div id="auth-check"></div>
+
+    <div id="admin-content" style="display:none;">
+
+      <!-- Stats / Reports -->
+      <div class="row g-3 mb-4" id="stats-row"></div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="adminTabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="properties">Properties</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="users">Users</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="bookings">Bookings</button></li>
+      </ul>
+
+      <div class="tab-pane mt-3" id="tab-properties">
+        <div id="properties-table" class="table-responsive"></div>
+      </div>
+      <div class="tab-pane mt-3 d-none" id="tab-users">
+        <div id="users-table" class="table-responsive"></div>
+      </div>
+      <div class="tab-pane mt-3 d-none" id="tab-bookings">
+        <div id="bookings-table" class="table-responsive"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const statusColors = {
+      active: "bg-success", pending: "bg-warning text-dark", inactive: "bg-secondary",
+      confirmed: "bg-success", cancelled: "bg-danger", completed: "bg-secondary",
+    };
+
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-warning">Please <a href="login.html">login</a> as an admin.</div>`;
+        return;
+      }
+      if (user.role !== "admin") {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-info">This dashboard is for administrators only.</div>`;
+        return;
+      }
+
+      document.getElementById("admin-content").style.display = "block";
+      await loadStats();
+      await loadProperties();
+      await loadUsers();
+      await loadBookings();
+
+      document.querySelectorAll("#adminTabs button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("#adminTabs button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("d-none"));
+          document.getElementById(`tab-${btn.dataset.tab}`).classList.remove("d-none");
+        });
+      });
+    }
+
+    async function loadStats() {
+      const row = document.getElementById("stats-row");
+      try {
+        const s = await api("/api/admin.php?resource=stats");
+        const cards = [
+          ["Total Users", s.total_users],
+          ["Tenants", s.total_tenants],
+          ["Owners", s.total_owners],
+          ["Properties", s.total_properties],
+          ["Pending Properties", s.pending_properties],
+          ["Confirmed Bookings", s.confirmed_bookings],
+          ["Total Bookings", s.total_bookings],
+          ["Revenue (Confirmed)", "Rs. " + Number(s.total_revenue).toLocaleString()],
+        ];
+        row.innerHTML = cards.map(([label, value]) => `
+          <div class="col-md-3 col-6">
+            <div class="card p-3 text-center h-100">
+              <div class="fs-4 fw-bold">${value}</div>
+              <div class="text-muted small">${label}</div>
+            </div>
+          </div>
+        `).join("");
+      } catch (e) {
+        row.innerHTML = `<div class="col-12"><div class="alert alert-danger">${e.message}</div></div>`;
+      }
+    }
+
+    async function loadProperties() {
+      const container = document.getElementById("properties-table");
+      try {
+        const properties = await api("/api/admin.php?resource=properties");
+        container.innerHTML = `
+          <table class="table table-bordered align-middle">
+            <thead><tr><th>ID</th><th>Name</th><th>Owner</th><th>City</th><th>Rent</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${properties.map(p => `
+                <tr>
+                  <td>${p.property_id}</td>
+                  <td>${p.property_name}</td>
+                  <td>${p.owner_name}</td>
+                  <td>${p.city}</td>
+                  <td>Rs. ${Number(p.rent).toLocaleString()}</td>
+                  <td><span class="badge ${statusColors[p.status] || 'bg-secondary'}">${p.status}</span></td>
+                  <td>
+                    ${p.status !== 'active' ? `<button class="btn btn-sm btn-success approve-btn" data-id="${p.property_id}">Approve</button>` : ""}
+                    ${p.status !== 'inactive' ? `<button class="btn btn-sm btn-outline-warning deactivate-btn" data-id="${p.property_id}">Deactivate</button>` : ""}
+                    <button class="btn btn-sm btn-outline-danger delete-prop-btn" data-id="${p.property_id}">Delete</button>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+
+        container.querySelectorAll(".approve-btn").forEach(b => b.addEventListener("click", () => setPropertyStatus(b.dataset.id, "active")));
+        container.querySelectorAll(".deactivate-btn").forEach(b => b.addEventListener("click", () => setPropertyStatus(b.dataset.id, "inactive")));
+        container.querySelectorAll(".delete-prop-btn").forEach(b => b.addEventListener("click", () => deleteProperty(b.dataset.id)));
+      } catch (e) {
+        container.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    async function setPropertyStatus(id, status) {
+      try {
+        await api(`/api/admin.php?resource=properties&id=${id}`, { method: "PUT", body: { status } });
+        loadProperties();
+        loadStats();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function deleteProperty(id) {
+      if (!confirm("Delete this property?")) return;
+      try {
+        await api(`/api/admin.php?resource=properties&id=${id}`, { method: "DELETE" });
+        loadProperties();
+        loadStats();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function loadUsers() {
+      const container = document.getElementById("users-table");
+      try {
+        const users = await api("/api/admin.php?resource=users");
+        container.innerHTML = `
+          <table class="table table-bordered align-middle">
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${users.map(u => `
+                <tr>
+                  <td>${u.user_id}</td>
+                  <td>${u.name}</td>
+                  <td>${u.email}</td>
+                  <td>${u.phone_number || ""}</td>
+                  <td>
+                    <select class="form-select form-select-sm role-select" data-id="${u.user_id}" style="width:auto;">
+                      <option value="tenant" ${u.role==='tenant'?'selected':''}>Tenant</option>
+                      <option value="owner" ${u.role==='owner'?'selected':''}>Owner</option>
+                      <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+                    </select>
+                  </td>
+                  <td><button class="btn btn-sm btn-outline-danger delete-user-btn" data-id="${u.user_id}">Delete</button></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+
+        container.querySelectorAll(".role-select").forEach(sel => {
+          sel.addEventListener("change", async () => {
+            try {
+              await api(`/api/admin.php?resource=users&id=${sel.dataset.id}`, { method: "PUT", body: { role: sel.value } });
+              loadStats();
+            } catch (e) { alert(e.message); }
+          });
+        });
+        container.querySelectorAll(".delete-user-btn").forEach(b => {
+          b.addEventListener("click", async () => {
+            if (!confirm("Delete this user?")) return;
+            try {
+              await api(`/api/admin.php?resource=users&id=${b.dataset.id}`, { method: "DELETE" });
+              loadUsers();
+              loadStats();
+            } catch (e) { alert(e.message); }
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    async function loadBookings() {
+      const container = document.getElementById("bookings-table");
+      try {
+        const bookings = await api("/api/admin.php?resource=bookings");
+        container.innerHTML = `
+          <table class="table table-bordered align-middle">
+            <thead><tr><th>ID</th><th>Property</th><th>Tenant</th><th>Owner</th><th>Start</th><th>Duration</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              ${bookings.map(b => `
+                <tr>
+                  <td>${b.booking_id}</td>
+                  <td>${b.property_name} (${b.city})</td>
+                  <td>${b.tenant_name}</td>
+                  <td>${b.owner_name}</td>
+                  <td>${b.start_date}</td>
+                  <td>${b.duration_months} mo</td>
+                  <td>Rs. ${Number(b.total_amount).toLocaleString()}</td>
+                  <td><span class="badge ${statusColors[b.status] || 'bg-secondary'}">${b.status}</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (e) {
+        container.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

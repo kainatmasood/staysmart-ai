@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Living Expense Calculator - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link active" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4" style="max-width: 640px;">
+    <h2 class="section-title">Living Expense Calculator</h2>
+    <p class="text-muted">Estimate your total monthly living cost by combining rent with utilities and maintenance.</p>
+
+    <div class="card p-4">
+      <form id="expense-form" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Monthly Rent (Rs.)</label>
+          <input type="number" class="form-control" name="rent" required min="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Electricity (Rs.)</label>
+          <input type="number" class="form-control" name="electricity" min="0" value="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Water (Rs.)</label>
+          <input type="number" class="form-control" name="water" min="0" value="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Internet (Rs.)</label>
+          <input type="number" class="form-control" name="internet" min="0" value="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Maintenance Charges (Rs.)</label>
+          <input type="number" class="form-control" name="maintenance" min="0" value="0">
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+        </div>
+      </form>
+
+      <div id="result" class="mt-4"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Pre-fill rent if coming from a property details page
+    const rentParam = new URLSearchParams(window.location.search).get("rent");
+    if (rentParam) document.querySelector('input[name="rent"]').value = rentParam;
+
+    document.getElementById("expense-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {};
+      for (const [k, v] of fd.entries()) payload[k] = Number(v);
+
+      const result = document.getElementById("result");
+      try {
+        const data = await api("/api/expense.php", { method: "POST", body: payload });
+        const b = data.breakdown;
+        result.innerHTML = `
+          <h5>Monthly Cost Breakdown</h5>
+          <table class="table">
+            <tbody>
+              <tr><td>Rent</td><td class="text-end">Rs. ${b.rent.toLocaleString()}</td></tr>
+              <tr><td>Electricity</td><td class="text-end">Rs. ${b.electricity.toLocaleString()}</td></tr>
+              <tr><td>Water</td><td class="text-end">Rs. ${b.water.toLocaleString()}</td></tr>
+              <tr><td>Internet</td><td class="text-end">Rs. ${b.internet.toLocaleString()}</td></tr>
+              <tr><td>Maintenance</td><td class="text-end">Rs. ${b.maintenance.toLocaleString()}</td></tr>
+              <tr class="fw-bold"><td>Total</td><td class="text-end">Rs. ${data.total_monthly_cost.toLocaleString()}</td></tr>
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        result.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

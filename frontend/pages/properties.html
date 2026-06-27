@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Properties - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link active" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">Browse Long-Term Properties</h2>
+
+    <div class="card p-3 mb-4">
+      <form id="filter-form" class="row g-3">
+        <div class="col-md-2">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" name="city" placeholder="Islamabad">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Max Rent</label>
+          <input type="number" class="form-control" name="max_rent" placeholder="50000">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Min Rooms</label>
+          <input type="number" class="form-control" name="rooms" min="1" placeholder="1">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Type</label>
+          <select class="form-select" name="property_type">
+            <option value="">Any</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="studio">Studio</option>
+            <option value="room">Room</option>
+            <option value="hostel">Hostel</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Lifestyle</label>
+          <select class="form-select" name="lifestyle">
+            <option value="">Any</option>
+            <option value="quiet">Quiet</option>
+            <option value="social">Social</option>
+            <option value="family">Family</option>
+            <option value="students">Students</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="results" class="row g-4">
+      <div class="col-12 text-center text-muted py-5">Loading properties...</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    function renderProperties(properties) {
+      const container = document.getElementById("results");
+      if (!properties.length) {
+        container.innerHTML = `<div class="col-12 text-center text-muted py-5">No properties match your filters.</div>`;
+        return;
+      }
+      container.innerHTML = properties.map(p => `
+        <div class="col-md-4">
+          <div class="card property-card h-100 position-relative">
+            <img src="https://placehold.co/400x220?text=${encodeURIComponent(p.property_name)}" alt="${p.property_name}">
+            <div class="card-body">
+              <h5 class="card-title">${p.property_name}</h5>
+              <p class="text-muted mb-1">${p.city} • ${p.rooms} room(s) • ${p.property_type}</p>
+              <p class="mb-2"><small class="text-muted">${(p.facilities || '').split(',').filter(Boolean).join(', ') || 'No facilities listed'}</small></p>
+              <p class="price mb-2">Rs. ${Number(p.rent).toLocaleString()} / month</p>
+              <a href="property-details.html?id=${p.property_id}" class="btn btn-sm btn-primary">View Details</a>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadProperties(params = "") {
+      const container = document.getElementById("results");
+      container.innerHTML = `<div class="col-12 text-center text-muted py-5">Loading properties...</div>`;
+      try {
+        const properties = await api(`/api/properties.php${params ? "?" + params : ""}`);
+        renderProperties(properties);
+      } catch (e) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-5">Could not load properties. Make sure the backend API is running at ${API_BASE}.</div>`;
+      }
+    }
+
+    // Pre-fill filters from query string (coming from homepage quick search)
+    const urlParams = new URLSearchParams(window.location.search);
+    const form = document.getElementById("filter-form");
+    for (const [key, value] of urlParams.entries()) {
+      const el = form.elements.namedItem(key);
+      if (el) el.value = value;
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams();
+      for (const [key, value] of new FormData(form).entries()) {
+        if (value) params.append(key, value);
+      }
+      loadProperties(params.toString());
+    });
+
+    loadProperties(urlParams.toString());
+  </script>
+</body>
+</html>

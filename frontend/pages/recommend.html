@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Property Recommendations - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link active" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">AI Smart Property Recommendation</h2>
+    <p class="text-muted">Tell us your budget, location, stay duration, lifestyle, and required facilities. Our AI will rank properties by compatibility score.</p>
+
+    <div class="card p-4 mb-4">
+      <form id="recommend-form" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Budget (Rs.)</label>
+          <input type="number" class="form-control" name="budget" placeholder="50000" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Preferred Location</label>
+          <input type="text" class="form-control" name="location" placeholder="Islamabad">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Stay Duration</label>
+          <select class="form-select" name="duration">
+            <option value="1">Monthly (1 month)</option>
+            <option value="3">Quarterly (3 months)</option>
+            <option value="6" selected>Semester (6 months)</option>
+            <option value="12">Annual (12 months)</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Lifestyle</label>
+          <select class="form-select" name="lifestyle">
+            <option value="">No preference</option>
+            <option value="quiet">Quiet Environment</option>
+            <option value="social">Social</option>
+            <option value="family">Family</option>
+            <option value="students">Students</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Required Facilities</label>
+          <div class="d-flex flex-wrap gap-3" id="facilities-checkboxes">
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="wifi"> WiFi</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="parking"> Parking</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="furnished"> Furnished</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="ac"> AC</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="backup"> Power Backup</label>
+            <label class="form-check"><input class="form-check-input" type="checkbox" name="facilities" value="water"> Water Supply</label>
+          </div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">Get AI Recommendations</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById("recommend-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const facilities = fd.getAll("facilities");
+
+      const payload = {
+        budget: Number(fd.get("budget")),
+        location: fd.get("location"),
+        duration: Number(fd.get("duration")),
+        lifestyle: fd.get("lifestyle"),
+        facilities,
+      };
+
+      const results = document.getElementById("results");
+      results.innerHTML = `<div class="text-center text-muted py-4">Analyzing your preferences...</div>`;
+
+      try {
+        const data = await api("/api/recommend.php", { method: "POST", body: payload });
+        const recs = data.recommendations || [];
+
+        if (!recs.length) {
+          results.innerHTML = `<div class="alert alert-warning">No matching properties found. Try adjusting your budget or location.</div>`;
+          return;
+        }
+
+        results.innerHTML = `
+          <h4 class="mb-3">Recommended Properties</h4>
+          <div class="row g-4">
+            ${recs.map(p => `
+              <div class="col-md-4">
+                <div class="card property-card h-100 position-relative">
+                  <span class="badge-match">${p.match_score}% Match</span>
+                  <img src="https://placehold.co/400x220?text=${encodeURIComponent(p.property_name)}" alt="${p.property_name}">
+                  <div class="card-body">
+                    <h5 class="card-title">${p.property_name}</h5>
+                    <p class="text-muted mb-1">${p.city} • ${p.rooms} room(s)</p>
+                    <p class="price mb-2">Rs. ${Number(p.rent).toLocaleString()} / month</p>
+                    <p class="match-score mb-2">Compatibility: ${p.match_score}%</p>
+                    <a href="property-details.html?id=${p.property_id}" class="btn btn-sm btn-primary">View Details</a>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } catch (err) {
+        results.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

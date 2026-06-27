@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tenant Dashboard - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">My Dashboard</h2>
+    <div id="auth-check"></div>
+
+    <h5 class="mt-4">My Bookings</h5>
+    <div id="bookings-list" class="row g-3 mt-2">
+      <div class="col-12 text-center text-muted py-4">Loading bookings...</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const statusBadge = {
+      pending: "bg-warning text-dark",
+      confirmed: "bg-success",
+      cancelled: "bg-danger",
+      completed: "bg-secondary",
+    };
+
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-warning">Please <a href="login.html">login</a> to view your dashboard.</div>`;
+        document.getElementById("bookings-list").innerHTML = "";
+        return;
+      }
+      if (user.role !== "tenant") {
+        document.getElementById("auth-check").innerHTML =
+          `<div class="alert alert-info">This dashboard is for tenants. Go to your <a href="${user.role === 'owner' ? 'owner-dashboard.html' : 'admin-dashboard.html'}">dashboard</a>.</div>`;
+        document.getElementById("bookings-list").innerHTML = "";
+        return;
+      }
+
+      await loadBookings();
+    }
+
+    async function loadBookings() {
+      const container = document.getElementById("bookings-list");
+      try {
+        const bookings = await api("/api/bookings.php");
+        if (!bookings.length) {
+          container.innerHTML = `<div class="col-12 text-center text-muted py-4">You have no bookings yet. <a href="properties.html">Browse properties</a> to get started.</div>`;
+          return;
+        }
+        container.innerHTML = bookings.map(b => `
+          <div class="col-md-6">
+            <div class="card p-3 h-100">
+              <div class="d-flex justify-content-between">
+                <h6 class="mb-1">${b.property_name}</h6>
+                <span class="badge ${statusBadge[b.status] || 'bg-secondary'}">${b.status}</span>
+              </div>
+              <p class="text-muted small mb-1">${b.city}</p>
+              <p class="mb-1">Start: ${b.start_date} • Duration: ${b.duration_months} month(s)</p>
+              <p class="mb-2">Total: Rs. ${Number(b.total_amount).toLocaleString()}</p>
+              ${b.status === 'pending' ? `<button class="btn btn-sm btn-outline-danger cancel-btn" data-id="${b.booking_id}">Cancel Booking</button>` : ""}
+            </div>
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".cancel-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            try {
+              await api(`/api/bookings.php?id=${btn.dataset.id}`, { method: "PUT", body: { status: "cancelled" } });
+              loadBookings();
+            } catch (e) {
+              alert(e.message);
+            }
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-4">${e.message}</div>`;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

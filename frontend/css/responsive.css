@@ -1,0 +1,88 @@
+/* Tablet Devices */
+@media (max-width: 992px) {
+    .hero .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .search-card {
+        transform: translateY(-30px);
+        padding: 1.5rem;
+    }
+    
+    .property-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Mobile Devices */
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .hero {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    .hero .display-4 {
+        font-size: 2rem;
+    }
+    
+    .ai-stats-card {
+        margin-top: 2rem;
+        padding: 1.5rem;
+    }
+    
+    .search-card {
+        transform: translateY(-20px);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .roommate-section .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .chat-message {
+        max-width: 90%;
+    }
+    
+    .property-details {
+        flex-wrap: wrap;
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 576px) {
+    .hero .display-4 {
+        font-size: 1.8rem;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .search-card {
+        padding: 1rem;
+    }
+    
+    .property-info {
+        padding: 1rem;
+    }
+    
+    .expense-item {
+        font-size: 0.9rem;
+    }
+    
+    .footer {
+        text-align: center;
+    }
+    
+    .footer .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+}

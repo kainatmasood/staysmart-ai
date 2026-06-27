@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roommate Matching - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link active" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <h2 class="section-title">Roommate Matching</h2>
+    <p class="text-muted">Create a roommate request and let our AI suggest compatible matches based on budget, lifestyle, gender, institution and occupation.</p>
+
+    <div id="login-warning"></div>
+
+    <div class="card p-4 mb-4" id="form-card" style="display:none;">
+      <h5 class="mb-3">My Roommate Request</h5>
+      <div id="alert-box"></div>
+      <form id="roommate-form" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Budget (Rs.)</label>
+          <input type="number" class="form-control" name="budget" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Preferred City</label>
+          <input type="text" class="form-control" name="preferred_city" placeholder="Islamabad">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Lifestyle</label>
+          <select class="form-select" name="lifestyle">
+            <option value="">No preference</option>
+            <option value="quiet">Quiet</option>
+            <option value="social">Social</option>
+            <option value="family">Family</option>
+            <option value="students">Students</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">Save Request &amp; Find Matches</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="matches-section"></div>
+  </div>
+
+  <footer>
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    function renderMatches(matches) {
+      const section = document.getElementById("matches-section");
+      if (!matches || !matches.length) {
+        section.innerHTML = `<div class="alert alert-info">No compatible roommate requests found yet. Check back later as more users join.</div>`;
+        return;
+      }
+      section.innerHTML = `
+        <h5 class="mb-3">Suggested Roommates</h5>
+        <div class="row g-3">
+          ${matches.map(m => `
+            <div class="col-md-4">
+              <div class="card p-3 h-100">
+                <h6 class="mb-1">${m.name} <span class="match-score">${m.compatibility}% Match</span></h6>
+                <p class="text-muted small mb-1">Budget: Rs. ${Number(m.budget).toLocaleString()}</p>
+                <p class="text-muted small mb-1">City: ${m.preferred_city || "Not specified"}</p>
+                <p class="text-muted small mb-1">Lifestyle: ${m.lifestyle || "Not specified"}</p>
+                <p class="text-muted small mb-0">${m.institution || ""} ${m.occupation ? "• " + m.occupation : ""}</p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        document.getElementById("login-warning").innerHTML =
+          `<div class="alert alert-warning">Please <a href="login.html">login</a> to create a roommate request and view matches.</div>`;
+        return;
+      }
+
+      document.getElementById("form-card").style.display = "block";
+
+      try {
+        const data = await api("/api/roommates.php");
+        if (data.my_request) {
+          const f = document.getElementById("roommate-form");
+          f.budget.value = data.my_request.budget;
+          f.preferred_city.value = data.my_request.preferred_city || "";
+          f.lifestyle.value = data.my_request.lifestyle || "";
+        }
+        renderMatches(data.matches);
+      } catch (e) {
+        document.getElementById("matches-section").innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    document.getElementById("roommate-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      try {
+        await api("/api/roommates.php", {
+          method: "POST",
+          body: {
+            budget: Number(fd.get("budget")),
+            preferred_city: fd.get("preferred_city"),
+            lifestyle: fd.get("lifestyle"),
+          }
+        });
+        showAlert("alert-box", "Roommate request saved! Showing updated matches below.", "success");
+        const data = await api("/api/roommates.php");
+        renderMatches(data.matches);
+      } catch (err) {
+        showAlert("alert-box", err.message);
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5" style="max-width: 480px;">
+    <div class="card p-4">
+      <h3 class="text-center mb-4">Login to StaySmart AI</h3>
+      <div id="alert-box"></div>
+      <form id="login-form">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+      <p class="text-center mt-3 mb-0">Don't have an account? <a href="register.html">Register here</a></p>
+
+      <hr>
+      <p class="text-muted small mb-1"><strong>Demo accounts</strong> (password: <code>password123</code>):</p>
+      <ul class="text-muted small mb-0">
+        <li>Tenant: sara.tenant@staysmart.ai</li>
+        <li>Owner: ali.owner@staysmart.ai</li>
+        <li>Admin: admin@staysmart.ai</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      try {
+        const data = await api("/auth/login.php", {
+          method: "POST",
+          body: { email: form.get("email"), password: form.get("password") }
+        });
+        const role = data.user.role;
+        if (role === "owner") window.location.href = "owner-dashboard.html";
+        else if (role === "admin") window.location.href = "admin-dashboard.html";
+        else window.location.href = "tenant-dashboard.html";
+      } catch (err) {
+        showAlert("alert-box", err.message);
+      }
+    });
+  </script>
+</body>
+</html>

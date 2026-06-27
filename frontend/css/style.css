@@ -1,0 +1,186 @@
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --accent: #f59e0b;
+  --bg: #f4f7fb;
+  --card-bg: #ffffff;
+  --text-muted: #6b7280;
+  --radius: 14px;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  color: #1f2937;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.navbar-brand span {
+  color: var(--accent);
+}
+.navbar {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+.navbar .nav-link, .navbar-brand {
+  color: #fff !important;
+}
+.navbar .nav-link:hover {
+  color: var(--accent) !important;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(120deg, var(--primary) 0%, #06b6d4 100%);
+  color: #fff;
+  border-radius: 0 0 40px 40px;
+  padding: 60px 0 70px;
+  margin-bottom: -40px;
+}
+.hero h1 { font-weight: 800; }
+.hero p { opacity: 0.95; }
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+.property-card img {
+  height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.property-card .badge-match {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+.property-card .price {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* Search / form panel */
+.search-panel {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  padding: 24px;
+  margin-top: -90px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover { opacity: 0.9; color: #fff; }
+
+/* Section headings */
+.section-title {
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  position: relative;
+}
+.section-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* Footer */
+footer {
+  background: #111827;
+  color: #d1d5db;
+  padding: 30px 0;
+  margin-top: 60px;
+}
+footer a { color: #93c5fd; }
+
+/* Chatbot widget */
+#chatbot-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 26px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  z-index: 1050;
+}
+#chatbot-window {
+  position: fixed;
+  bottom: 92px;
+  right: 24px;
+  width: 320px;
+  max-height: 440px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1050;
+}
+#chatbot-window.open { display: flex; }
+#chatbot-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+#chatbot-messages {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  font-size: 14px;
+  background: #f9fafb;
+}
+.chat-msg { margin-bottom: 10px; }
+.chat-msg.user { text-align: right; }
+.chat-msg .bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 14px;
+  max-width: 85%;
+}
+.chat-msg.user .bubble { background: var(--primary); color: #fff; }
+.chat-msg.bot .bubble { background: #e5e7eb; color: #111827; }
+#chatbot-input-group { padding: 8px; border-top: 1px solid #e5e7eb; }
+
+/* Star rating display */
+.stars { color: var(--accent); }
+
+/* Utility */
+.match-score {
+  font-weight: 700;
+  color: var(--primary-dark);
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StaySmart AI - Intelligent Long-Term Rentals</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero text-center">
+    <div class="container">
+      <h1 class="display-5">Find Your Perfect Long-Term Home</h1>
+      <p class="lead mb-0">AI-powered recommendations for monthly, quarterly, semester &amp; annual stays.</p>
+    </div>
+  </header>
+
+  <!-- Quick Search Panel -->
+  <div class="container">
+    <div class="search-panel">
+      <form id="quick-search-form" class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">City</label>
+          <input type="text" class="form-control" name="city" placeholder="e.g. Islamabad">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Max Rent (Rs.)</label>
+          <input type="number" class="form-control" name="max_rent" placeholder="e.g. 50000">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Property Type</label>
+          <select class="form-select" name="property_type">
+            <option value="">Any</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="studio">Studio</option>
+            <option value="room">Room</option>
+            <option value="hostel">Hostel</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="container py-5">
+    <h2 class="section-title text-center mx-auto" style="max-width:600px;">Why StaySmart AI?</h2>
+    <div class="row g-4 mt-4">
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">🏠</div>
+          <h5 class="mt-2">Long-Term Booking</h5>
+          <p class="text-muted">Monthly, quarterly, semester, and annual rentals - built for students, interns and remote workers.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">🤖</div>
+          <h5 class="mt-2">AI Recommendations</h5>
+          <p class="text-muted">Get properties ranked by compatibility score based on your budget, location and lifestyle.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">🤝</div>
+          <h5 class="mt-2">Roommate Matching</h5>
+          <p class="text-muted">Find compatible roommates by budget, lifestyle, institution and occupation to split costs.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">💰</div>
+          <h5 class="mt-2">Rental Price Prediction</h5>
+          <p class="text-muted">Property owners get AI-suggested rent based on location, rooms, and facilities.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">🧮</div>
+          <h5 class="mt-2">Living Expense Calculator</h5>
+          <p class="text-muted">Estimate total monthly costs including rent, utilities, internet and maintenance.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-center">
+          <div class="fs-1">💬</div>
+          <h5 class="mt-2">AI Virtual Assistant</h5>
+          <p class="text-muted">Chat with our assistant using natural language to find the right property instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Properties -->
+  <section class="container py-4">
+    <h2 class="section-title">Featured Properties</h2>
+    <div id="featured-properties" class="row g-4 mt-2">
+      <div class="col-12 text-center text-muted py-5">Loading properties...</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <p class="mb-0">&copy; 2026 StaySmart AI. Built for CS-309 Web Design &amp; Development.</p>
+      <div>
+        <a href="properties.html" class="me-3">Browse</a>
+        <a href="roommate.html" class="me-3">Roommates</a>
+        <a href="login.html">Login</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById("quick-search-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams(new FormData(e.target)).toString();
+      window.location.href = `properties.html?${params}`;
+    });
+
+    async function loadFeatured() {
+      const container = document.getElementById("featured-properties");
+      try {
+        const properties = await api("/api/properties.php");
+        if (!properties.length) {
+          container.innerHTML = `<div class="col-12 text-center text-muted py-5">No properties available yet.</div>`;
+          return;
+        }
+        container.innerHTML = properties.slice(0, 6).map(p => `
+          <div class="col-md-4">
+            <div class="card property-card h-100 position-relative">
+              <img src="https://placehold.co/400x220?text=${encodeURIComponent(p.property_name)}" alt="${p.property_name}">
+              <div class="card-body">
+                <h5 class="card-title">${p.property_name}</h5>
+                <p class="text-muted mb-1">${p.city} • ${p.rooms} room(s) • ${p.property_type}</p>
+                <p class="price mb-2">Rs. ${Number(p.rent).toLocaleString()} / month</p>
+                <a href="property-details.html?id=${p.property_id}" class="btn btn-sm btn-primary">View Details</a>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      } catch (e) {
+        container.innerHTML = `<div class="col-12 text-center text-danger py-5">Could not load properties. Make sure the backend API is running at ${API_BASE}.</div>`;
+      }
+    }
+    loadFeatured();
+  </script>
+</body>
+</html>

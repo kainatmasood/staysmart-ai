@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - StaySmart AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">StaySmart<span>AI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="properties.html">Browse Properties</a></li>
+          <li class="nav-item"><a class="nav-link" href="recommend.html">AI Recommendations</a></li>
+          <li class="nav-item"><a class="nav-link" href="roommate.html">Roommate Matching</a></li>
+          <li class="nav-item"><a class="nav-link" href="expense-calculator.html">Expense Calculator</a></li>
+          <li id="nav-auth" class="d-flex gap-2"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5" style="max-width: 560px;">
+    <div class="card p-4">
+      <h3 class="text-center mb-4">Create Your StaySmart AI Account</h3>
+      <div id="alert-box"></div>
+      <form id="register-form">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" name="name" required>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-control" name="phone_number">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" minlength="6" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Account Type</label>
+          <select class="form-select" name="role" id="role-select" required>
+            <option value="tenant">Tenant (looking for accommodation)</option>
+            <option value="owner">Property Owner</option>
+          </select>
+        </div>
+
+        <div id="tenant-fields">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Gender</label>
+              <select class="form-select" name="gender">
+                <option value="">Prefer not to say</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Lifestyle</label>
+              <select class="form-select" name="lifestyle">
+                <option value="">Select</option>
+                <option value="quiet">Quiet</option>
+                <option value="social">Social</option>
+                <option value="family">Family</option>
+                <option value="students">Students</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Occupation</label>
+              <input type="text" class="form-control" name="occupation" placeholder="Student / Software Engineer">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Institution / Company</label>
+            <input type="text" class="form-control" name="institution" placeholder="e.g. NUST, Systems Ltd">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+      </form>
+      <p class="text-center mt-3 mb-0">Already have an account? <a href="login.html">Login here</a></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const tenantFields = document.getElementById("tenant-fields");
+    document.getElementById("role-select").addEventListener("change", (e) => {
+      tenantFields.style.display = e.target.value === "owner" ? "none" : "block";
+    });
+
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const payload = {};
+      for (const [key, value] of form.entries()) payload[key] = value;
+
+      try {
+        await api("/auth/register.php", { method: "POST", body: payload });
+        window.location.href = "login.html";
+      } catch (err) {
+        showAlert("alert-box", err.message);
+      }
+    });
+  </script>
+</body>
+</html>

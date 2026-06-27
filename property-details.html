@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --success: #10B981;
+            --danger: #EF4444;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #6B7280;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--light); padding-top: 70px; }
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; color: var(--primary) !important; }
+        .nav-link { font-weight: 500; color: var(--dark) !important; }
+        .nav-link:hover { color: var(--primary) !important; }
+        .btn-primary-custom { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 30px; font-weight: 600; transition: 0.3s; }
+        .btn-primary-custom:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline-custom { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 28px; border-radius: 30px; font-weight: 600; transition: 0.3s; }
+        .btn-outline-custom:hover { background: var(--primary); color: white; }
+        .property-image-main { height: 400px; background-size: cover; background-position: center; border-radius: 20px; }
+        .info-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .price-large { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .rating-star { color: #FBBF24; }
+        .review-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .booking-sidebar { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: sticky; top: 90px; }
+        .toast-notification { position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px; background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 4px solid var(--success); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .footer { background: var(--dark); color: white; padding: 40px 0; margin-top: 50px; }
+        @media (max-width: 768px) { .property-image-main { height: 250px; } .booking-sidebar { position: static; margin-top: 20px; } }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fas fa-home"></i> StaySmart AI</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#properties">Properties</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                <li class="nav-item ms-3" id="authNav">
+                    <button class="btn-primary-custom" style="padding: 8px 20px;" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fas fa-user"></i> Sign In
+                    </button>
+                </li>
+                <li class="nav-item dropdown ms-2" id="userNav" style="display: none;">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?background=2563EB&color=fff&bold=true" style="width: 35px; height: 35px; border-radius: 50%;">
+                        <span id="userName" class="ms-1"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Property Details Section -->
+<div class="container py-4">
+    <div id="propertyContent">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3">Loading property details...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container text-center">
+        <p>&copy; 2024 StaySmart AI. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0"><h5 class="modal-title">Welcome Back</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-4" id="authTab">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#login">Sign In</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#register">Create Account</button></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="login">
+                        <form id="loginForm">
+                            <div class="mb-3"><input type="email" class="form-control" id="loginEmail" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="loginPassword" placeholder="Password" required></div>
+                            <button type="submit" class="btn-primary-custom w-100">Sign In</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane" id="register">
+                        <form id="registerForm">
+                            <div class="mb-3"><input type="text" class="form-control" id="regName" placeholder="Full name" required></div>
+                            <div class="mb-3"><input type="email" class="form-control" id="regEmail" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="regPassword" placeholder="Password (min 6)" required></div>
+                            <div class="mb-3"><input type="number" class="form-control" id="regBudget" placeholder="Monthly budget (PKR)"></div>
+                            <button type="submit" class="btn-primary-custom w-100">Create Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="fas fa-calendar-check"></i> Book Property</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div id="bookingPropertyInfo" class="mb-3"></div>
+                <div class="mb-3"><label class="form-label fw-bold">Duration (months)</label><select class="form-select" id="bookingDuration" onchange="updateBookingTotal()"><option value="1">1 month</option><option value="3">3 months</option><option value="6" selected>6 months</option><option value="12">12 months</option></select></div>
+                <div class="mb-3"><label class="form-label fw-bold">Move-in Date</label><input type="date" class="form-control" id="bookingCheckIn"></div>
+                <div id="bookingTotal" class="alert alert-info"></div>
+                <div class="mb-3"><label class="form-label fw-bold">Payment Method</label><select class="form-select" id="paymentMethod"><option>Easypaisa</option><option>JazzCash</option><option>Credit Card</option><option>Bank Transfer</option></select></div>
+                <button class="btn-primary-custom w-100" onclick="confirmBooking()">Confirm Booking & Pay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE = 'http://localhost/StaySmart-AI/backend/api';
+    let currentUser = null;
+    let currentProperty = null;
+
+    // Complete properties database - 20 PROPERTIES
+    const propertiesDatabase = {
+        1: { id: 1, name: "Luxury Studio F-7", location: "Islamabad", address: "F-7 Markaz, Islamabad", price: 45000, beds: 1, baths: 1, type: "Studio", lifestyle: "Quiet", amenities: "WiFi, AC, Parking, Security", desc: "Modern studio in prime location. Near NUST University.", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267", rating: 4.9 },
+        2: { id: 2, name: "Modern 2-Bed E-11", location: "Islamabad", address: "E-11, Islamabad", price: 65000, beds: 2, baths: 2, type: "Apartment", lifestyle: "Balanced", amenities: "WiFi, AC, Parking, Gym", desc: "Spacious 2-bedroom apartment with modern amenities.", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688", rating: 4.8 },
+        3: { id: 3, name: "Family House DHA", location: "Lahore", address: "DHA Phase 5, Lahore", price: 95000, beds: 3, baths: 3, type: "House", lifestyle: "Family", amenities: "Garden, Parking, AC, Security", desc: "Beautiful family house with garden and garage.", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", rating: 4.9 },
+        4: { id: 4, name: "Budget Studio G-13", location: "Islamabad", address: "G-13, Islamabad", price: 28000, beds: 1, baths: 1, type: "Studio", lifestyle: "Student", amenities: "WiFi, Parking", desc: "Affordable studio. Great for students.", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", rating: 4.7 },
+        5: { id: 5, name: "Beach View Clifton", location: "Karachi", address: "Clifton, Karachi", price: 85000, beds: 2, baths: 2, type: "Apartment", lifestyle: "Luxury", amenities: "Pool, Gym, WiFi, AC", desc: "Luxury beachfront apartment with ocean views.", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", rating: 4.9 },
+        6: { id: 6, name: "Executive Suite", location: "Islamabad", address: "Blue Area, Islamabad", price: 105000, beds: 2, baths: 2, type: "Apartment", lifestyle: "Professional", amenities: "WiFi, AC, Parking, Gym", desc: "Premium executive suite in Blue Area.", image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914", rating: 4.95 },
+        7: { id: 7, name: "Cozy Room Gulberg", location: "Lahore", address: "Gulberg, Lahore", price: 35000, beds: 1, baths: 1, type: "Room", lifestyle: "Quiet", amenities: "WiFi, AC", desc: "Cozy private room in shared apartment.", image: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9", rating: 4.6 },
+        8: { id: 8, name: "Penthouse DHA", location: "Karachi", address: "DHA, Karachi", price: 150000, beds: 3, baths: 3, type: "Penthouse", lifestyle: "Luxury", amenities: "Pool, Gym, WiFi, View", desc: "Luxury penthouse with panoramic city views.", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", rating: 5.0 },
+        9: { id: 9, name: "Cozy Studio F-10", location: "Islamabad", address: "F-10, Islamabad", price: 35000, beds: 1, baths: 1, type: "Studio", lifestyle: "Quiet", amenities: "WiFi, AC, Parking", desc: "Perfect for students. Fully furnished.", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267", rating: 4.7 },
+        10: { id: 10, name: "Luxury 3-Bed", location: "Islamabad", address: "F-7, Islamabad", price: 120000, beds: 3, baths: 3, type: "Apartment", lifestyle: "Luxury", amenities: "Pool, Gym, WiFi, AC", desc: "Premium luxury apartment with views.", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", rating: 5.0 },
+        11: { id: 11, name: "Modern Studio F-11", location: "Islamabad", address: "F-11, Islamabad", price: 42000, beds: 1, baths: 1, type: "Studio", lifestyle: "Quiet", amenities: "WiFi, AC, Parking", desc: "Modern studio in F-11 sector.", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267", rating: 4.8 },
+        12: { id: 12, name: "Luxury 2-Bed DHA", location: "Lahore", address: "DHA Phase 6, Lahore", price: 85000, beds: 2, baths: 2, type: "Apartment", lifestyle: "Luxury", amenities: "Pool, Gym, WiFi", desc: "Luxury apartment in DHA Phase 6.", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688", rating: 4.9 },
+        13: { id: 13, name: "Family Home Gulshan", location: "Karachi", address: "Gulshan, Karachi", price: 55000, beds: 3, baths: 2, type: "House", lifestyle: "Family", amenities: "Garden, Parking", desc: "Spacious family home in Karachi.", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", rating: 4.7 },
+        14: { id: 14, name: "Budget Room Peshawar", location: "Peshawar", address: "University Town", price: 18000, beds: 1, baths: 1, type: "Room", lifestyle: "Student", amenities: "WiFi", desc: "Affordable room near university.", image: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9", rating: 4.5 },
+        15: { id: 15, name: "Executive Penthouse", location: "Islamabad", address: "Centaurus", price: 250000, beds: 4, baths: 4, type: "Penthouse", lifestyle: "Luxury", amenities: "Pool, Gym, WiFi, View", desc: "Ultra-luxury penthouse at Centaurus.", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", rating: 5.0 },
+        16: { id: 16, name: "Cozy Apartment Bahria", location: "Rawalpindi", address: "Bahria Town", price: 45000, beds: 2, baths: 2, type: "Apartment", lifestyle: "Balanced", amenities: "WiFi, AC, Parking", desc: "Beautiful apartment in Bahria Town.", image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914", rating: 4.8 },
+        17: { id: 17, name: "Studio Near Airport", location: "Karachi", address: "Gulistan-e-Johar", price: 30000, beds: 1, baths: 1, type: "Studio", lifestyle: "Professional", amenities: "WiFi, AC", desc: "Convenient studio near airport.", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", rating: 4.6 },
+        18: { id: 18, name: "3-Bed Family Villa", location: "Lahore", address: "Johar Town", price: 110000, beds: 3, baths: 3, type: "House", lifestyle: "Family", amenities: "Garden, Parking", desc: "Spacious family villa with garden.", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", rating: 4.9 },
+        19: { id: 19, name: "Beachfront Luxury", location: "Karachi", address: "DHA Phase 8", price: 180000, beds: 3, baths: 3, type: "Penthouse", lifestyle: "Luxury", amenities: "Pool, Gym, Sea View", desc: "Luxury beachfront penthouse!", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", rating: 5.0 },
+        20: { id: 20, name: "Student Studio", location: "Islamabad", address: "H-11", price: 25000, beds: 1, baths: 1, type: "Studio", lifestyle: "Student", amenities: "WiFi", desc: "Affordable studio near universities.", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267", rating: 4.6 }
+    };
+
+    function getPropertyId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return parseInt(urlParams.get('id'));
+    }
+
+    function loadProperty() {
+        const propertyId = getPropertyId();
+        
+        if (!propertyId || !propertiesDatabase[propertyId]) {
+            showError('Property not found! Please go back and select a valid property.');
+            return;
+        }
+        
+        currentProperty = propertiesDatabase[propertyId];
+        displayPropertyDetails();
+    }
+
+    function displayPropertyDetails() {
+        const p = currentProperty;
+        document.getElementById('propertyContent').innerHTML = `
+            <div class="row">
+                <div class="col-lg-7 mb-4">
+                    <div class="property-image-main" style="background-image: url('${p.image}')"></div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="booking-sidebar">
+                        <h2 class="mb-2">${p.name}</h2>
+                        <div class="mb-2"><i class="fas fa-map-marker-alt"></i> ${p.address}</div>
+                        <div class="mb-3">${generateStars(p.rating)} (${p.rating} stars)</div>
+                        <div class="price-large">Rs. ${p.price.toLocaleString()}<span class="fs-6">/month</span></div>
+                        <hr>
+                        <div class="d-flex gap-3 mb-3">
+                            <span><i class="fas fa-bed"></i> ${p.beds} beds</span>
+                            <span><i class="fas fa-bath"></i> ${p.baths} baths</span>
+                            <span><i class="fas fa-building"></i> ${p.type}</span>
+                        </div>
+                        <button class="btn-primary-custom w-100 mb-2" onclick="openBookingModal()">📅 Book Now</button>
+                        <button class="btn-outline-custom w-100" onclick="addToWishlist()">❤️ Save to Wishlist</button>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="info-card"><h4>Description</h4><p>${p.desc}</p></div>
+                    <div class="info-card"><h4>Amenities</h4><div class="row">${generateAmenities(p.amenities)}</div></div>
+                    <div class="info-card"><h4>AI Match Score</h4><div class="progress mb-2"><div class="progress-bar bg-primary" style="width: ${getMatchScore()}%"></div></div><p>${getMatchScore()}% match with your preferences!</p></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateStars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) stars += `<i class="fas fa-star rating-star"></i>`;
+        return stars;
+    }
+
+    function generateAmenities(amenities) {
+        return amenities.split(',').map(a => `<div class="col-6 mb-2"><i class="fas fa-check-circle text-success"></i> ${a.trim()}</div>`).join('');
+    }
+
+    function getMatchScore() {
+        const stored = localStorage.getItem('staySmartUser');
+        if (stored) {
+            const user = JSON.parse(stored);
+            let score = 75;
+            if (user.budget && currentProperty.price <= user.budget) score += 15;
+            return Math.min(99, score);
+        }
+        return 85;
+    }
+
+    function openBookingModal() {
+        if (!currentUser) { showNotification('Please login first', 'error'); return; }
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('bookingPropertyInfo').innerHTML = `<div class="d-flex gap-3"><img src="${currentProperty.image}" style="width:70px;height:70px;border-radius:10px"><div><h6>${currentProperty.name}</h6><div class="text-primary fw-bold">Rs. ${currentProperty.price.toLocaleString()}/month</div></div></div>`;
+        document.getElementById('bookingCheckIn').value = today;
+        document.getElementById('bookingCheckIn').min = today;
+        updateBookingTotal();
+        new bootstrap.Modal(document.getElementById('bookingModal')).show();
+    }
+
+    function updateBookingTotal() {
+        const duration = parseInt(document.getElementById('bookingDuration').value);
+        const total = currentProperty.price * duration;
+        document.getElementById('bookingTotal').innerHTML = `<strong>Total:</strong> Rs. ${total.toLocaleString()} for ${duration} months`;
+    }
+
+    function confirmBooking() {
+        const duration = parseInt(document.getElementById('bookingDuration').value);
+        const total = currentProperty.price * duration;
+        
+        let bookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+        bookings.push({ id: Date.now(), property: currentProperty.name, duration: duration, total: total, date: new Date().toISOString() });
+        localStorage.setItem('userBookings', JSON.stringify(bookings));
+        
+        bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+        showNotification(`✅ Booking confirmed! Total: Rs. ${total.toLocaleString()}`, 'success');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+    }
+
+    function addToWishlist() {
+        if (!currentUser) { showNotification('Please login first', 'error'); return; }
+        let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        if (!wishlist.includes(currentProperty.id)) wishlist.push(currentProperty.id);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        showNotification('Added to wishlist! ❤️', 'success');
+    }
+
+    function showNotification(msg, type) {
+        const n = document.createElement('div');
+        n.className = 'toast-notification';
+        n.style.borderLeftColor = type === 'success' ? '#10B981' : '#EF4444';
+        n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+        document.body.appendChild(n);
+        setTimeout(() => n.remove(), 3000);
+    }
+
+    function showError(msg) {
+        document.getElementById('propertyContent').innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><h3>${msg}</h3><a href="index.html" class="btn-primary-custom mt-3">Back to Home</a></div>`;
+    }
+
+    // Auth
+    document.getElementById('registerForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showNotification('Registration successful! Please login.', 'success');
+        document.querySelector('#authTab button:first-child').click();
+    });
+
+    document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        currentUser = { name: email.split('@')[0], email: email, budget: 50000 };
+        localStorage.setItem('staySmartUser', JSON.stringify(currentUser));
+        document.getElementById('authNav').style.display = 'none';
+        document.getElementById('userNav').style.display = 'block';
+        document.getElementById('userName').textContent = currentUser.name;
+        bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+        showNotification(`Welcome ${currentUser.name}!`, 'success');
+    });
+
+    function logout() { localStorage.removeItem('staySmartUser'); window.location.href = 'index.html'; }
+    function checkLoginStatus() {
+        const stored = localStorage.getItem('staySmartUser');
+        if (stored) {
+            currentUser = JSON.parse(stored);
+            document.getElementById('authNav').style.display = 'none';
+            document.getElementById('userNav').style.display = 'block';
+            document.getElementById('userName').textContent = currentUser.name;
+        }
+    }
+
+    window.updateBookingTotal = updateBookingTotal;
+    window.confirmBooking = confirmBooking;
+    window.openBookingModal = openBookingModal;
+    window.addToWishlist = addToWishlist;
+    window.logout = logout;
+
+    checkLoginStatus();
+    loadProperty();
+</script>
+</body>
+</html>
